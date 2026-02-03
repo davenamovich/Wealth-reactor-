@@ -1,41 +1,74 @@
 import { NextResponse } from 'next/server';
-
-// In-memory store for MVP (shared with check route in production via DB)
-// This is a workaround - in production use Supabase
-const users: Map<string, {
-  username: string;
-  links: Record<string, string>;
-  hasPaid: boolean;
-  referrer?: string;
-  created: string;
-}> = new Map();
-
-// Export for use by other routes
-export { users };
+import { supabase } from '@/lib/supabase';
 
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    const { username, links, hasPaid } = data;
+    const { username, links, hasPaid, referrer } = data;
 
     if (!username) {
       return NextResponse.json({ error: 'Username required' }, { status: 400 });
     }
 
-    // Get existing or create new
-    const existing = users.get(username.toLowerCase());
-    
-    users.set(username.toLowerCase(), {
-      username: username.toLowerCase(),
-      links: links || existing?.links || {},
-      hasPaid: hasPaid ?? existing?.hasPaid ?? false,
-      referrer: existing?.referrer,
-      created: existing?.created || new Date().toISOString(),
-    });
+    const normalizedUsername = username.toLowerCase();
 
+    // If Supabase is configured, use it
+    if (supabase) {
+      // Check if user exists
+      const { data: existing } = await supabase
+        .from('users')
+        .select('*')
+        .eq('username', normalizedUsername)
+        .single();
+
+      if (existing) {
+        // Update existing user
+        const { error } = await supabase
+          .from('users')
+          .update({
+            links: links || existing.links,
+            has_paid: hasPaid ?? existing.has_paid,
+          })
+          .eq('username', normalizedUsername);
+
+        if (error) {
+          console.error('Supabase update error:', error);
+          return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
+        }
+
+        return NextResponse.json({ 
+          success: true,
+          user: { ...existing, links, has_paid: hasPaid },
+        });
+      } else {
+        // Create new user
+        const { data: newUser, error } = await supabase
+          .from('users')
+          .insert({
+            username: normalizedUsername,
+            links: links || {},
+            has_paid: hasPaid || false,
+            referrer_id: referrer || null,
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Supabase insert error:', error);
+          return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
+        }
+
+        return NextResponse.json({ 
+          success: true,
+          user: newUser,
+        });
+      }
+    }
+
+    // Fallback: return success (data stored in localStorage on client)
     return NextResponse.json({ 
       success: true,
-      user: users.get(username.toLowerCase()),
+      message: 'Stored locally (Supabase not configured)',
     });
   } catch (error) {
     console.error('Save user error:', error);

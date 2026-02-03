@@ -1,26 +1,6 @@
 import { NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabase';
 import { STREAMS } from '@/lib/config';
-
-// Shared in-memory store (in production, use Supabase)
-const users: Map<string, {
-  username: string;
-  links: Record<string, string>;
-  hasPaid: boolean;
-  referrer?: string;
-}> = new Map();
-
-// Seed with default user for testing
-users.set('magicdave', {
-  username: 'magicdave',
-  links: {
-    crinkl: 'https://crinkl.it.com/welcome?ref=PMA6J5A',
-    gohighlevel: 'https://go.e1ulife.com/?affid=magicdave',
-    mgames: 'https://magicdave.memegames.ai/',
-    rebet: 'U-DAV-NAM-KV',
-    amplivo: 'https://amplivo.com/sponsor/Magicdave',
-  },
-  hasPaid: true,
-});
 
 export async function GET(
   request: Request,
@@ -28,15 +8,45 @@ export async function GET(
 ) {
   const { username } = await params;
   
-  const user = users.get(username.toLowerCase());
-  
-  if (!user) {
-    return NextResponse.json({ error: 'User not found' }, { status: 404 });
+  if (!username) {
+    return NextResponse.json({ error: 'Username required' }, { status: 400 });
   }
 
-  // Return public profile data
-  return NextResponse.json({
-    username: user.username,
-    links: user.links,
-  });
+  const normalizedUsername = username.toLowerCase();
+
+  // If Supabase is configured, fetch from database
+  if (supabase) {
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('username', normalizedUsername)
+      .single();
+
+    if (error || !user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Build response with user's links (or defaults)
+    const streams = STREAMS.map(stream => ({
+      id: stream.id,
+      name: stream.name,
+      tagline: stream.tagline,
+      icon: stream.icon,
+      url: user.links?.[stream.id] || stream.defaultUrl,
+      isCustom: !!user.links?.[stream.id] && user.links[stream.id] !== stream.defaultUrl,
+      promoCode: stream.promoCode,
+    }));
+
+    return NextResponse.json({
+      username: user.username,
+      links: user.links || {},
+      streams,
+      hasPaid: user.has_paid,
+      referrer: user.referrer_id,
+      created: user.created_at,
+    });
+  }
+
+  // Fallback: User not found (no Supabase)
+  return NextResponse.json({ error: 'User not found' }, { status: 404 });
 }
