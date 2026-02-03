@@ -263,11 +263,11 @@ function StartContent() {
               <div className="border-t border-green-500/30 pt-4 mt-4">
                 <div className="text-xs text-gray-400 mb-2">Send USDC (Base) to:</div>
                 <div className="bg-black/50 rounded-lg p-3 font-mono text-sm text-yellow-400 break-all mb-2">
-                  0x1F5e5897176747b8C9ACD004491E9b45E0e2b207
+                  0x04D1e136AAd78F04aC68FbC26F8d61b23B1F88CA
                 </div>
                 <button
                   onClick={() => {
-                    navigator.clipboard.writeText('0x1F5e5897176747b8C9ACD004491E9b45E0e2b207');
+                    navigator.clipboard.writeText('0x04D1e136AAd78F04aC68FbC26F8d61b23B1F88CA');
                   }}
                   className="w-full py-2 bg-green-600 hover:bg-green-500 rounded-lg text-sm font-bold"
                 >
