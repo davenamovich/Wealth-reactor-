@@ -17,9 +17,8 @@ export default function PayButton({ username, referrer, onSuccess, onError }: Pa
   const [hasWallet, setHasWallet] = useState(true);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setHasWallet(!!window.ethereum);
-    }
+    // Always assume wallet might be available (mobile apps inject later)
+    setHasWallet(true);
   }, []);
 
   const handleConnect = async () => {
@@ -63,49 +62,59 @@ export default function PayButton({ username, referrer, onSuccess, onError }: Pa
     }
   };
 
-  // No wallet installed
-  if (!hasWallet && !isConnected) {
-    return (
-      <div className="space-y-3">
-        <a
-          href="https://www.coinbase.com/wallet"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block w-full py-4 bg-[#0052FF] hover:bg-[#0040DD] text-white font-bold rounded-xl text-lg text-center"
-        >
-          📲 Get Coinbase Wallet
-        </a>
-        <p className="text-xs text-gray-500 text-center">
-          Install Coinbase Wallet to pay with USDC on Base
-        </p>
-        <div className="flex gap-2 text-xs justify-center">
-          <a href="https://metamask.io" target="_blank" rel="noopener" className="text-orange-400 hover:underline">
-            MetaMask
-          </a>
-          <span className="text-gray-600">|</span>
-          <a href="https://rainbow.me" target="_blank" rel="noopener" className="text-purple-400 hover:underline">
-            Rainbow
-          </a>
-        </div>
-      </div>
-    );
-  }
+  const [showWalletHelp, setShowWalletHelp] = useState(false);
 
   if (!isConnected) {
     return (
-      <button
-        onClick={handleConnect}
-        disabled={isConnecting}
-        className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded-xl disabled:opacity-50 text-lg active:scale-95 transition-transform"
-      >
-        {isConnecting ? (
-          <span className="flex items-center justify-center gap-2">
-            <span className="animate-spin">⏳</span> Connecting...
-          </span>
-        ) : (
-          '🔗 Connect Wallet'
+      <div className="space-y-3">
+        <button
+          onClick={async () => {
+            try {
+              await handleConnect();
+            } catch (err: any) {
+              // If no wallet, show help
+              if (err.message?.includes('No wallet') || err.message?.includes('install')) {
+                setShowWalletHelp(true);
+              }
+            }
+          }}
+          disabled={isConnecting}
+          className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded-xl disabled:opacity-50 text-lg active:scale-95 transition-transform"
+        >
+          {isConnecting ? (
+            <span className="flex items-center justify-center gap-2">
+              <span className="animate-spin">⏳</span> Connecting...
+            </span>
+          ) : (
+            '🔗 Connect Wallet to Pay'
+          )}
+        </button>
+        
+        {showWalletHelp && (
+          <div className="bg-gray-800 rounded-xl p-4 text-sm">
+            <p className="text-gray-300 mb-3">No wallet detected. Install one:</p>
+            <div className="flex gap-2">
+              <a
+                href="https://metamask.io/download/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 py-2 bg-orange-500 text-white font-bold rounded-lg text-center text-xs"
+              >
+                MetaMask
+              </a>
+              <a
+                href="https://www.coinbase.com/wallet"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 py-2 bg-blue-600 text-white font-bold rounded-lg text-center text-xs"
+              >
+                Coinbase
+              </a>
+            </div>
+            <p className="text-gray-500 text-xs mt-2 text-center">Then refresh this page</p>
+          </div>
         )}
-      </button>
+      </div>
     );
   }
 

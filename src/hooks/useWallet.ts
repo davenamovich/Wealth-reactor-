@@ -34,10 +34,13 @@ export function useWallet() {
     setError(null);
 
     try {
-      if (typeof window === 'undefined' || !window.ethereum) {
-        // Open Coinbase Wallet download page
-        window.open('https://www.coinbase.com/wallet', '_blank');
-        throw new Error('No wallet found. Opening Coinbase Wallet...');
+      if (typeof window === 'undefined') {
+        throw new Error('Please open in a browser');
+      }
+      
+      if (!window.ethereum) {
+        // Try to trigger wallet connection anyway (some wallets inject late)
+        throw new Error('No wallet detected. Please install MetaMask or Coinbase Wallet, then refresh.');
       }
 
       // Request accounts
