@@ -10,13 +10,13 @@ export const STREAMS = [
     linkPattern: /crinkl\.it/i,
   },
   {
-    id: 'gohighlevel', 
-    name: 'GoHighLevel',
+    id: 'goe1ulife', 
+    name: 'Goe1ulife',
     tagline: 'Instant BTC for Referrals',
-    description: 'Get paid in Bitcoin for referring businesses to the #1 marketing platform.',
+    description: 'Get paid in Bitcoin for referring businesses. Powered by GoHighLevel.',
     defaultUrl: 'https://go.e1ulife.com/?affid=magicdave',
     icon: '🚀',
-    linkPattern: /e1ulife\.com|gohighlevel/i,
+    linkPattern: /e1ulife\.com/i,
   },
   {
     id: 'mgames',
