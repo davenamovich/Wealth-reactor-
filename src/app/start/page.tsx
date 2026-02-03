@@ -26,6 +26,8 @@ function StartContent() {
   const [loading, setLoading] = useState(false);
   const [walletAddress, setWalletAddress] = useState('');
   const [verifying, setVerifying] = useState(false);
+  const [showPromoModal, setShowPromoModal] = useState(false);
+  const [promoCopied, setPromoCopied] = useState(false);
 
   // Load saved progress
   useEffect(() => {
@@ -348,18 +350,88 @@ function StartContent() {
               {STREAMS[currentStream].description}
             </p>
 
-            <a
-              href={STREAMS[currentStream].defaultUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full py-3 bg-blue-600 hover:bg-blue-500 text-center font-bold rounded-xl mb-4 transition-colors"
-            >
-              Sign Up for {STREAMS[currentStream].name} →
-            </a>
+            {/* Promo Code Modal */}
+            {showPromoModal && STREAMS[currentStream].promoCode && (
+              <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-6">
+                <div className="bg-gray-900 border border-yellow-500/50 rounded-2xl p-6 max-w-sm w-full">
+                  <div className="text-center mb-4">
+                    <div className="text-4xl mb-2">📋</div>
+                    <h3 className="text-xl font-bold">Copy Promo Code First!</h3>
+                    <p className="text-sm text-gray-400 mt-1">You'll need this when signing up</p>
+                  </div>
+                  
+                  <div className="bg-black rounded-xl p-4 mb-4">
+                    <div className="text-xs text-gray-500 mb-2">Your Promo Code:</div>
+                    <div className="font-mono text-2xl text-yellow-400 text-center font-bold">
+                      {STREAMS[currentStream].promoCode}
+                    </div>
+                  </div>
+                  
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(STREAMS[currentStream].promoCode!);
+                      setPromoCopied(true);
+                    }}
+                    className={`w-full py-3 font-bold rounded-xl mb-3 transition-all ${
+                      promoCopied 
+                        ? 'bg-green-500 text-black' 
+                        : 'bg-yellow-500 hover:bg-yellow-400 text-black'
+                    }`}
+                  >
+                    {promoCopied ? '✓ Copied!' : '📋 Copy Code'}
+                  </button>
+                  
+                  <a
+                    href={STREAMS[currentStream].defaultUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => {
+                      setShowPromoModal(false);
+                      setPromoCopied(false);
+                    }}
+                    className={`block w-full py-3 text-center font-bold rounded-xl transition-all ${
+                      promoCopied
+                        ? 'bg-blue-600 hover:bg-blue-500 text-white'
+                        : 'bg-gray-700 text-gray-400 cursor-not-allowed pointer-events-none'
+                    }`}
+                  >
+                    {promoCopied ? 'Continue to ' + STREAMS[currentStream].name + ' →' : 'Copy code first'}
+                  </a>
+                  
+                  <button
+                    onClick={() => {
+                      setShowPromoModal(false);
+                      setPromoCopied(false);
+                    }}
+                    className="w-full py-2 text-gray-500 text-sm mt-2"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {STREAMS[currentStream].promoCode ? (
+              <button
+                onClick={() => setShowPromoModal(true)}
+                className="block w-full py-3 bg-blue-600 hover:bg-blue-500 text-center font-bold rounded-xl mb-4 transition-colors"
+              >
+                Sign Up for {STREAMS[currentStream].name} →
+              </button>
+            ) : (
+              <a
+                href={STREAMS[currentStream].defaultUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full py-3 bg-blue-600 hover:bg-blue-500 text-center font-bold rounded-xl mb-4 transition-colors"
+              >
+                Sign Up for {STREAMS[currentStream].name} →
+              </a>
+            )}
 
             {STREAMS[currentStream].promoCode && (
-              <div className="bg-black/50 rounded-lg p-3 mb-4">
-                <div className="text-xs text-gray-500 mb-1">Promo Code</div>
+              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mb-4">
+                <div className="text-xs text-yellow-400 mb-1">⚠️ Promo Code Required</div>
                 <div className="font-mono text-lg text-yellow-400">{STREAMS[currentStream].promoCode}</div>
               </div>
             )}
