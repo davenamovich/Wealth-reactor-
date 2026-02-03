@@ -4,7 +4,12 @@ import "./globals.css";
 import { SITE } from "@/lib/config";
 import { Suspense } from "react";
 import BottomNav from "@/components/BottomNav";
-import { Web3Provider } from "@/components/Web3Provider";
+import dynamic from "next/dynamic";
+
+const Web3Provider = dynamic(
+  () => import("@/components/Web3Provider").then((mod) => mod.Web3Provider),
+  { ssr: false }
+);
 
 const inter = Inter({ subsets: ["latin"] });
 
