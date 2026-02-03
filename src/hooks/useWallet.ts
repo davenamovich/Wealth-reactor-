@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { createPublicClient, createWalletClient, custom, http, parseUnits, encodeFunctionData } from 'viem';
+import { useState, useCallback, useEffect } from 'react';
+import { createPublicClient, createWalletClient, custom, http } from 'viem';
 import { base } from 'viem/chains';
 import { CONTRACT_ADDRESS, USDC_ADDRESS, CONTRACT_ABI, USDC_ABI, ACCESS_FEE } from '@/lib/contract';
 
@@ -9,6 +9,25 @@ export function useWallet() {
   const [address, setAddress] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasWallet, setHasWallet] = useState(false);
+
+  // Check for wallet on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setHasWallet(!!window.ethereum);
+      
+      // Check if already connected
+      if (window.ethereum) {
+        window.ethereum.request({ method: 'eth_accounts' })
+          .then((accounts: string[]) => {
+            if (accounts && accounts.length > 0) {
+              setAddress(accounts[0]);
+            }
+          })
+          .catch(console.error);
+      }
+    }
+  }, []);
 
   const connect = useCallback(async () => {
     setIsConnecting(true);
@@ -16,7 +35,9 @@ export function useWallet() {
 
     try {
       if (typeof window === 'undefined' || !window.ethereum) {
-        throw new Error('Please install MetaMask or another Web3 wallet');
+        // Open Coinbase Wallet download page
+        window.open('https://www.coinbase.com/wallet', '_blank');
+        throw new Error('No wallet found. Opening Coinbase Wallet...');
       }
 
       // Request accounts
@@ -35,7 +56,7 @@ export function useWallet() {
           });
         } catch (switchError: any) {
           // Add Base network if not exists
-          if (switchError.code === 4902) {
+          if (switchError.code === 4902 || switchError.code === -32603) {
             await window.ethereum.request({
               method: 'wallet_addEthereumChain',
               params: [{
@@ -46,6 +67,8 @@ export function useWallet() {
                 blockExplorerUrls: ['https://basescan.org'],
               }],
             });
+          } else {
+            console.error('Switch error:', switchError);
           }
         }
 
