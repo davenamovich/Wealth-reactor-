@@ -278,28 +278,43 @@ function StartContent() {
                 </div>
               </div>
               
-              <div className="border-t border-green-500/30 pt-4 mt-4">
-                <div className="text-xs text-gray-400 mb-2">1. Send $30 USDC (Base) to:</div>
-                <div className="bg-black/50 rounded-lg p-3 font-mono text-sm text-yellow-400 break-all mb-2">
-                  0x04D1e136AAd78F04aC68FbC26F8d61b23B1F88CA
+              <div className="border-t border-green-500/30 pt-4 mt-4 space-y-4">
+                <div>
+                  <div className="text-xs text-gray-400 mb-2">Smart Contract (Base):</div>
+                  <div className="bg-black/50 rounded-lg p-2 font-mono text-xs text-yellow-400 break-all">
+                    0xa6Ca8A21eDEe7f59833d189A357fA8032811b6c6
+                  </div>
                 </div>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText('0x04D1e136AAd78F04aC68FbC26F8d61b23B1F88CA');
-                  }}
-                  className="w-full py-2 bg-green-600 hover:bg-green-500 rounded-lg text-sm font-bold mb-4"
+
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+                  <div className="text-sm font-bold text-blue-400 mb-2">💳 Pay via Smart Contract:</div>
+                  <ol className="text-xs text-gray-300 space-y-2 list-decimal list-inside">
+                    <li>Click button below to open BaseScan</li>
+                    <li>Connect wallet → Switch to Base network</li>
+                    <li>First: Approve USDC on the USDC contract</li>
+                    <li>Then: Call <code className="bg-black/50 px-1 rounded">pay</code> with username: <code className="text-yellow-400">{userData?.username}</code></li>
+                  </ol>
+                </div>
+
+                <a 
+                  href="https://basescan.org/address/0xa6Ca8A21eDEe7f59833d189A357fA8032811b6c6#writeContract"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-bold text-center"
                 >
-                  📋 Copy Treasury Address
-                </button>
-                
-                <div className="text-xs text-gray-400 mb-2">2. Enter YOUR wallet address:</div>
-                <input
-                  type="text"
-                  value={walletAddress}
-                  onChange={(e) => setWalletAddress(e.target.value)}
-                  placeholder="0x..."
-                  className="w-full px-3 py-2 bg-black/50 border border-gray-700 rounded-lg text-white text-sm font-mono focus:border-green-500 focus:outline-none"
-                />
+                  🔗 Open Contract on BaseScan →
+                </a>
+
+                <div>
+                  <div className="text-xs text-gray-400 mb-2">Your wallet address (for verification):</div>
+                  <input
+                    type="text"
+                    value={walletAddress}
+                    onChange={(e) => setWalletAddress(e.target.value)}
+                    placeholder="0x..."
+                    className="w-full px-3 py-2 bg-black/50 border border-gray-700 rounded-lg text-white text-sm font-mono focus:border-green-500 focus:outline-none"
+                  />
+                </div>
               </div>
             </div>
 
@@ -308,16 +323,13 @@ function StartContent() {
                 <span>✓</span> Lifetime spot in the rotator
               </div>
               <div className="flex items-center gap-2 text-green-400">
-                <span>✓</span> Your page shown to ALL visitors
+                <span>✓</span> Auto $6 to your referrer
               </div>
               <div className="flex items-center gap-2 text-green-400">
-                <span>✓</span> Set up all 5 income streams
+                <span>✓</span> Auto $3 to L2 referrer
               </div>
               <div className="flex items-center gap-2 text-green-400">
-                <span>✓</span> Earn $6 when your referrals pay
-              </div>
-              <div className="flex items-center gap-2 text-green-400">
-                <span>✓</span> Earn $3 from their referrals too
+                <span>✓</span> Withdraw your earnings anytime
               </div>
             </div>
 
@@ -328,11 +340,11 @@ function StartContent() {
               disabled={verifying || !walletAddress}
               className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-black font-bold rounded-xl disabled:opacity-50 text-lg active:scale-95 transition-transform"
             >
-              {verifying ? '🔍 Verifying Payment...' : '✓ Verify My Payment'}
+              {verifying ? '🔍 Checking Contract...' : '✓ Verify My Payment'}
             </button>
             
             <p className="mt-4 text-xs text-gray-500 text-center">
-              We check the blockchain automatically • No manual approval needed
+              Click after paying via the smart contract
             </p>
           </div>
         )}

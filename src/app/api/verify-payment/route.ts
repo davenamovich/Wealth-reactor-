@@ -1,51 +1,53 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { CONTRACT_ADDRESS } from '@/lib/contract';
 
-const TREASURY = '0x04D1e136AAd78F04aC68FbC26F8d61b23B1F88CA';
-const USDC_BASE = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
-const REQUIRED_AMOUNT = 30_000_000; // $30 USDC (6 decimals)
 const BASE_RPC = 'https://mainnet.base.org';
 
-// Check USDC transfers to treasury
-async function checkUSDCTransfers(fromAddress: string): Promise<boolean> {
+// Check if user has paid via smart contract
+async function checkContractPayment(walletAddress: string): Promise<{ paid: boolean; username: string }> {
   try {
-    // Get recent USDC transfer events to treasury from this address
+    // Call checkPayment(address) on the contract
+    // Function selector for checkPayment(address): 0x3b56fdc6
+    const data = '0x3b56fdc6000000000000000000000000' + walletAddress.slice(2).toLowerCase();
+    
     const response = await fetch(BASE_RPC, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         jsonrpc: '2.0',
         id: 1,
-        method: 'eth_getLogs',
+        method: 'eth_call',
         params: [{
-          address: USDC_BASE,
-          topics: [
-            '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', // Transfer event
-            '0x000000000000000000000000' + fromAddress.slice(2).toLowerCase(), // from
-            '0x000000000000000000000000' + TREASURY.slice(2).toLowerCase(), // to
-          ],
-          fromBlock: 'earliest',
-          toBlock: 'latest',
-        }],
+          to: CONTRACT_ADDRESS,
+          data,
+        }, 'latest'],
       }),
     });
 
-    const data = await response.json();
+    const result = await response.json();
     
-    if (data.result && data.result.length > 0) {
-      // Check if any transfer is >= $30
-      for (const log of data.result) {
-        const amount = parseInt(log.data, 16);
-        if (amount >= REQUIRED_AMOUNT) {
-          return true;
-        }
+    if (result.result && result.result !== '0x') {
+      // Decode the response (bool paid, string username)
+      const hex = result.result.slice(2);
+      const paid = parseInt(hex.slice(0, 64), 16) === 1;
+      
+      // Decode username string
+      let username = '';
+      if (paid && hex.length > 128) {
+        const offset = parseInt(hex.slice(64, 128), 16) * 2;
+        const length = parseInt(hex.slice(offset, offset + 64), 16);
+        const usernameHex = hex.slice(offset + 64, offset + 64 + length * 2);
+        username = Buffer.from(usernameHex, 'hex').toString('utf8');
       }
+      
+      return { paid, username };
     }
     
-    return false;
+    return { paid: false, username: '' };
   } catch (error) {
-    console.error('Error checking transfers:', error);
-    return false;
+    console.error('Error checking contract payment:', error);
+    return { paid: false, username: '' };
   }
 }
 
@@ -57,14 +59,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Username and wallet required' }, { status: 400 });
     }
 
-    // Check blockchain for payment
-    const hasPaid = await checkUSDCTransfers(walletAddress);
+    // Check smart contract for payment
+    const { paid } = await checkContractPayment(walletAddress);
 
-    if (!hasPaid) {
+    if (!paid) {
       return NextResponse.json({ 
         verified: false, 
-        message: 'Payment not found. Send $30 USDC to treasury.',
-        treasury: TREASURY,
+        message: 'Payment not found. Complete payment via the smart contract.',
+        contract: CONTRACT_ADDRESS,
       });
     }
 
@@ -105,12 +107,12 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Wallet required' }, { status: 400 });
   }
 
-  const hasPaid = await checkUSDCTransfers(wallet);
+  const { paid, username } = await checkContractPayment(wallet);
   
   return NextResponse.json({ 
     wallet,
-    hasPaid,
-    treasury: TREASURY,
-    required: '$30 USDC on Base',
+    hasPaid: paid,
+    username: username || null,
+    contract: CONTRACT_ADDRESS,
   });
 }
