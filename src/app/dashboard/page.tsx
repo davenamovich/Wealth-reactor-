@@ -3,17 +3,22 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { STREAMS, PRICING } from '@/lib/config';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useAccount } from 'wagmi';
 
 interface UserData {
   username: string;
   links: Record<string, string>;
   hasPaid: boolean;
   currentStep: number;
+  wallet?: string;
 }
 
 export default function DashboardPage() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [copied, setCopied] = useState(false);
+  const [walletSaved, setWalletSaved] = useState(false);
+  const { address, isConnected } = useAccount();
   const [stats, setStats] = useState({
     l1Referrals: 0,
     l2Referrals: 0,
@@ -27,6 +32,34 @@ export default function DashboardPage() {
       setUserData(JSON.parse(saved));
     }
   }, []);
+
+  // Save wallet when connected
+  const saveWallet = async () => {
+    if (!userData || !address) return;
+    
+    try {
+      const res = await fetch('/api/user/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: userData.username,
+          wallet: address,
+          links: userData.links,
+          hasPaid: userData.hasPaid,
+        }),
+      });
+      
+      if (res.ok) {
+        const updated = { ...userData, wallet: address };
+        setUserData(updated);
+        localStorage.setItem('wealth_reactor_user', JSON.stringify(updated));
+        setWalletSaved(true);
+        setTimeout(() => setWalletSaved(false), 3000);
+      }
+    } catch (err) {
+      console.error('Failed to save wallet:', err);
+    }
+  };
 
   const copyLink = () => {
     if (userData) {
@@ -54,13 +87,21 @@ export default function DashboardPage() {
         <div className="text-center">
           <div className="text-6xl mb-4">🔒</div>
           <h1 className="text-2xl font-black mb-4">Not Logged In</h1>
-          <p className="text-gray-400 mb-6">You need to sign up first.</p>
-          <Link
-            href="/start"
-            className="inline-block px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold rounded-xl"
-          >
-            Get Started →
-          </Link>
+          <p className="text-gray-400 mb-6">Log in or sign up to continue.</p>
+          <div className="space-y-3">
+            <Link
+              href="/login"
+              className="block px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold rounded-xl"
+            >
+              Log In →
+            </Link>
+            <Link
+              href="/start"
+              className="block px-6 py-3 bg-gray-800 hover:bg-gray-700 font-bold rounded-xl"
+            >
+              Sign Up →
+            </Link>
+          </div>
         </div>
       </main>
     );
@@ -85,6 +126,36 @@ export default function DashboardPage() {
           >
             View Public Page
           </Link>
+        </div>
+
+        {/* Wallet Connection */}
+        <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-4 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm text-gray-400 mb-1">Wallet</div>
+              {userData.wallet ? (
+                <div className="text-xs text-green-400">
+                  ✓ {userData.wallet.slice(0, 6)}...{userData.wallet.slice(-4)}
+                </div>
+              ) : (
+                <div className="text-xs text-gray-600">Not linked</div>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <ConnectButton />
+              {isConnected && !userData.wallet && (
+                <button
+                  onClick={saveWallet}
+                  className="px-3 py-2 bg-green-600 hover:bg-green-500 text-sm font-bold rounded-lg"
+                >
+                  Link
+                </button>
+              )}
+            </div>
+          </div>
+          {walletSaved && (
+            <div className="mt-2 text-xs text-green-400">✓ Wallet linked!</div>
+          )}
         </div>
 
         {/* Referral Link Card */}

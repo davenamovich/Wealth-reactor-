@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    const { username, links, hasPaid, referrer } = data;
+    const { username, links, hasPaid, referrer, wallet } = data;
 
     if (!username) {
       return NextResponse.json({ error: 'Username required' }, { status: 400 });
@@ -22,13 +22,16 @@ export async function POST(request: Request) {
         .single();
 
       if (existing) {
+        // Build update object
+        const updateData: Record<string, unknown> = {};
+        if (links !== undefined) updateData.links = links;
+        if (hasPaid !== undefined) updateData.has_paid = hasPaid;
+        if (wallet !== undefined) updateData.wallet_address = wallet;
+
         // Update existing user
         const { error } = await supabase
           .from('users')
-          .update({
-            links: links || existing.links,
-            has_paid: hasPaid ?? existing.has_paid,
-          })
+          .update(updateData)
           .eq('username', normalizedUsername);
 
         if (error) {
@@ -38,7 +41,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ 
           success: true,
-          user: { ...existing, links, has_paid: hasPaid },
+          user: { ...existing, ...updateData },
         });
       } else {
         // Create new user
@@ -49,6 +52,7 @@ export async function POST(request: Request) {
             links: links || {},
             has_paid: hasPaid || false,
             referrer_id: referrer || null,
+            wallet_address: wallet || null,
           })
           .select()
           .single();
