@@ -37,16 +37,12 @@ function StartContent() {
       const data = JSON.parse(saved) as UserData;
       setUserData(data);
       setUsername(data.username);
-      if (data.hasPaid) {
-        // If all streams are done, go to complete
-        if (data.currentStep >= STREAMS.length) {
-          setStep('complete');
-        } else {
-          setStep('setup');
-          setCurrentStream(data.currentStep || 0);
-        }
+      // Go to setup or complete (payment is optional for rotator)
+      if (data.currentStep >= STREAMS.length) {
+        setStep('complete');
       } else {
-        setStep('payment');
+        setStep('setup');
+        setCurrentStream(data.currentStep || 0);
       }
     }
   }, []);
@@ -81,7 +77,8 @@ function StartContent() {
       };
       setUserData(newUserData);
       localStorage.setItem('wealth_reactor_user', JSON.stringify(newUserData));
-      setStep('payment');
+      // Go straight to setup - payment is optional for rotator
+      setStep('setup');
     } catch {
       setError('Something went wrong');
     }
@@ -462,9 +459,9 @@ function StartContent() {
         {step === 'complete' && (
           <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-8 text-center">
             <div className="text-6xl mb-4">🎉</div>
-            <h1 className="text-3xl font-black mb-2">You&apos;re In!</h1>
+            <h1 className="text-3xl font-black mb-2">Your Page is Ready!</h1>
             <p className="text-gray-400 mb-6">
-              Your wealth reactor is now active. Share your page to earn commissions.
+              Share your link to earn commissions from your referrals.
             </p>
 
             <div className="bg-black/50 rounded-xl p-4 mb-6">
@@ -486,10 +483,32 @@ function StartContent() {
 
             <Link
               href={`/u/${userData?.username}`}
-              className="block w-full py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold rounded-xl"
+              className="block w-full py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold rounded-xl mb-4"
             >
               View My Page →
             </Link>
+
+            {/* Rotator Upsell */}
+            {!userData?.hasPaid && (
+              <div className="mt-6 pt-6 border-t border-gray-800">
+                <div className="text-sm text-gray-400 mb-3">Want MORE traffic to your page?</div>
+                <Link
+                  href="/rotator"
+                  className="block w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-xl"
+                >
+                  🔄 Join The Rotator — $30 for lifetime traffic
+                </Link>
+                <p className="text-xs text-gray-600 mt-2">
+                  Pay once, get featured to ALL visitors forever
+                </p>
+              </div>
+            )}
+
+            {userData?.hasPaid && (
+              <div className="mt-4 bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+                <span className="text-green-400">✓ You're in the rotator!</span>
+              </div>
+            )}
           </div>
         )}
 

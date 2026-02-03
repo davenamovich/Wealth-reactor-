@@ -104,29 +104,45 @@ export default function Home() {
         </section>
       )}
 
-      {/* Income Streams Preview */}
-      <section className="py-16 px-6">
+      {/* Income Streams - LIVE LINKS */}
+      <section className="py-16 px-6 bg-gradient-to-b from-black to-gray-900/50">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-black text-center mb-4">The 5 Streams</h2>
-          <p className="text-center text-gray-500 mb-12">Each one is free to join. You earn from all 5 + referral commissions.</p>
+          <h2 className="text-3xl font-black text-center mb-4">🚀 Start Earning Now</h2>
+          <p className="text-center text-gray-400 mb-8">Click any stream below to sign up FREE and start earning crypto</p>
           
           <div className="grid gap-4">
-            {STREAMS.map((stream, i) => (
-              <div 
+            {STREAMS.map((stream) => (
+              <a 
                 key={stream.id}
-                className="flex items-center gap-4 p-4 bg-white/5 rounded-xl border border-white/5 hover:border-white/10 transition-all"
+                href={stream.defaultUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-4 p-5 bg-gradient-to-r from-white/5 to-white/10 rounded-xl border border-white/10 hover:border-green-500/50 hover:from-green-500/10 hover:to-emerald-500/10 transition-all group"
               >
-                <div className="text-4xl">{stream.icon}</div>
+                <div className="text-5xl">{stream.icon}</div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-bold">{stream.name}</h3>
-                    <span className="text-xs px-2 py-0.5 bg-green-500/10 text-green-400 rounded">Free</span>
+                    <h3 className="font-bold text-lg group-hover:text-green-400 transition-colors">{stream.name}</h3>
+                    <span className="text-xs px-2 py-0.5 bg-green-500/20 text-green-400 rounded-full">FREE</span>
                   </div>
                   <p className="text-sm text-gray-400">{stream.tagline}</p>
+                  {stream.promoCode && (
+                    <p className="text-xs text-yellow-400 mt-1">Code: {stream.promoCode}</p>
+                  )}
                 </div>
-                <div className="text-2xl font-black text-gray-700">#{i + 1}</div>
-              </div>
+                <div className="text-green-400 text-2xl group-hover:translate-x-1 transition-transform">→</div>
+              </a>
             ))}
+          </div>
+
+          <div className="mt-8 text-center">
+            <p className="text-gray-500 text-sm mb-4">Want your OWN referral page with YOUR links?</p>
+            <Link
+              href="/start"
+              className="inline-block px-8 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold rounded-xl hover:scale-105 transition-transform"
+            >
+              Create Your Free Page →
+            </Link>
           </div>
         </div>
       </section>
