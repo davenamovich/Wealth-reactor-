@@ -4,6 +4,7 @@ import "./globals.css";
 import { SITE } from "@/lib/config";
 import { Suspense } from "react";
 import BottomNav from "@/components/BottomNav";
+import { Web3Provider } from "@/components/Web3Provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,12 +26,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} bg-black text-white antialiased`}>
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-          <div className="pb-20">
-            {children}
-          </div>
-          <BottomNav />
-        </Suspense>
+        <Web3Provider>
+          <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+            <div className="pb-20">
+              {children}
+            </div>
+            <BottomNav />
+          </Suspense>
+        </Web3Provider>
       </body>
     </html>
   );
