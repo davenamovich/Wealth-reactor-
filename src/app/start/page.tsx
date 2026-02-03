@@ -232,32 +232,49 @@ function StartContent() {
         {/* Step: Payment */}
         {step === 'payment' && (
           <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-8">
-            <h1 className="text-2xl font-black mb-2">Unlock Access</h1>
+            <h1 className="text-2xl font-black mb-2">Unlock All 5 Streams</h1>
             <p className="text-gray-400 text-sm mb-6">
-              One-time payment for lifetime access to all 5 income streams + your referral page.
+              One payment. Lifetime access. Start earning today.
             </p>
 
             <div className="bg-black/50 rounded-xl p-6 mb-6">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-gray-400">Access Fee</span>
                 <div className="text-right">
-                  <div className="text-2xl font-black">${PRICING.accessFee} <span className="text-sm text-gray-500">USDC</span></div>
-                  <div className="text-xs text-green-400">🎉 FREE during beta!</div>
+                  <div className="text-3xl font-black text-green-400">${PRICING.accessFee}</div>
+                  <div className="text-xs text-gray-500">USDC on Base</div>
                 </div>
               </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center gap-2 text-green-400">
-                  <span>✓</span> 5 income streams setup
+              
+              <div className="border-t border-gray-700 pt-4 mt-4">
+                <div className="text-xs text-gray-500 mb-2">Send payment to:</div>
+                <div className="bg-gray-900 rounded-lg p-3 font-mono text-xs text-yellow-400 break-all mb-2">
+                  {process.env.NEXT_PUBLIC_TREASURY_WALLET || '0x...'}
                 </div>
-                <div className="flex items-center gap-2 text-green-400">
-                  <span>✓</span> Your own referral page
-                </div>
-                <div className="flex items-center gap-2 text-green-400">
-                  <span>✓</span> 20% L1 + 10% L2 commissions
-                </div>
-                <div className="flex items-center gap-2 text-green-400">
-                  <span>✓</span> Lifetime access
-                </div>
+                <button
+                  onClick={() => {
+                    const wallet = process.env.NEXT_PUBLIC_TREASURY_WALLET || '';
+                    if (wallet) navigator.clipboard.writeText(wallet);
+                  }}
+                  className="w-full py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-xs"
+                >
+                  📋 Copy Address
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-2 text-sm mb-6">
+              <div className="flex items-center gap-2 text-green-400">
+                <span>✓</span> All 5 income streams
+              </div>
+              <div className="flex items-center gap-2 text-green-400">
+                <span>✓</span> Your own referral page
+              </div>
+              <div className="flex items-center gap-2 text-green-400">
+                <span>✓</span> Earn $6 per direct referral
+              </div>
+              <div className="flex items-center gap-2 text-green-400">
+                <span>✓</span> Earn $3 from their referrals
               </div>
             </div>
 
@@ -266,13 +283,13 @@ function StartContent() {
             <button
               onClick={handlePayment}
               disabled={loading}
-              className="w-full py-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold rounded-xl disabled:opacity-50 text-lg active:scale-95 transition-transform"
+              className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-black font-bold rounded-xl disabled:opacity-50 text-lg active:scale-95 transition-transform"
             >
-              {loading ? 'Processing...' : '🚀 Start Free (Beta)'}
+              {loading ? 'Verifying...' : '✓ I\'ve Sent $30 USDC'}
             </button>
             
             <p className="mt-4 text-xs text-gray-600 text-center">
-              USDC payment on Base coming soon
+              After payment, you'll set up your 5 income streams
             </p>
           </div>
         )}
