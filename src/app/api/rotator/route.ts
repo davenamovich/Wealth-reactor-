@@ -1,24 +1,22 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
-const ROTATOR_PRICE = 20; // $20 USDC for 24 hours
-const ROTATOR_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
+const ROTATOR_PRICE = 20; // $20 USDC one-time
+const TREASURY_WALLET = process.env.TREASURY_WALLET || '0x742d35Cc6634C0532925a3b844Bc9e7595f5bB61';
 
 export async function GET() {
-  // Get active rotator entries (not expired)
+  // Get all rotator members
   if (!supabase) {
     return NextResponse.json({ 
       error: 'Database not configured',
       rotator: [],
     });
   }
-
-  const now = new Date().toISOString();
   
   const { data: entries, error } = await supabase
     .from('rotator')
-    .select('username, expires_at')
-    .gt('expires_at', now)
+    .select('username, created_at')
+    .eq('active', true)
     .order('created_at', { ascending: true });
 
   if (error) {
@@ -26,18 +24,19 @@ export async function GET() {
     return NextResponse.json({ rotator: [] });
   }
 
-  // Get a random active user for the landing page redirect
-  const activeUsers = entries || [];
-  const featured = activeUsers.length > 0 
-    ? activeUsers[Math.floor(Math.random() * activeUsers.length)]
+  // Get a random member for the landing page redirect
+  const members = entries || [];
+  const featured = members.length > 0 
+    ? members[Math.floor(Math.random() * members.length)]
     : null;
 
   return NextResponse.json({
-    rotator: activeUsers,
+    rotator: members,
     featured: featured?.username || null,
-    count: activeUsers.length,
+    count: members.length,
     price: ROTATOR_PRICE,
-    duration: '24 hours',
+    treasury: TREASURY_WALLET,
+    type: 'lifetime',
   });
 }
 
@@ -65,40 +64,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Calculate expiry (24 hours from now)
-    const expiresAt = new Date(Date.now() + ROTATOR_DURATION_MS).toISOString();
-
-    // Check if user already in rotator
+    // Check if already in rotator
     const { data: existing } = await supabase
       .from('rotator')
       .select('*')
       .eq('username', username.toLowerCase())
-      .gt('expires_at', new Date().toISOString())
       .single();
 
     if (existing) {
-      // Extend existing entry
-      const newExpiry = new Date(new Date(existing.expires_at).getTime() + ROTATOR_DURATION_MS).toISOString();
-      
-      await supabase
-        .from('rotator')
-        .update({ expires_at: newExpiry, tx_hash: txHash })
-        .eq('id', existing.id);
-
       return NextResponse.json({
         success: true,
-        message: 'Rotator time extended',
-        expires_at: newExpiry,
+        message: 'Already in rotator!',
+        member: true,
       });
     }
 
-    // Add new entry
+    // Add to rotator (lifetime)
     const { error } = await supabase
       .from('rotator')
       .insert({
         username: username.toLowerCase(),
-        expires_at: expiresAt,
-        tx_hash: txHash,
+        tx_hash: txHash || null,
+        active: true,
       });
 
     if (error) {
@@ -108,9 +95,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      message: 'Added to rotator for 24 hours',
-      expires_at: expiresAt,
+      message: 'Welcome to the rotator! Lifetime access unlocked.',
       price: ROTATOR_PRICE,
+      treasury: TREASURY_WALLET,
     });
   } catch (error) {
     console.error('Rotator error:', error);
