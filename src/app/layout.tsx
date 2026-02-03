@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { SITE } from "@/lib/config";
 import { Suspense } from "react";
+import BottomNav from "@/components/BottomNav";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,7 +26,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} bg-black text-white antialiased`}>
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-          {children}
+          <div className="pb-20">
+            {children}
+          </div>
+          <BottomNav />
         </Suspense>
       </body>
     </html>

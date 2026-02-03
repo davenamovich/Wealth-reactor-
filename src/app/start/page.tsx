@@ -33,8 +33,13 @@ function StartContent() {
       setUserData(data);
       setUsername(data.username);
       if (data.hasPaid) {
-        setStep('setup');
-        setCurrentStream(data.currentStep || 0);
+        // If all streams are done, go to complete
+        if (data.currentStep >= STREAMS.length) {
+          setStep('complete');
+        } else {
+          setStep('setup');
+          setCurrentStream(data.currentStep || 0);
+        }
       } else {
         setStep('payment');
       }
@@ -169,7 +174,7 @@ function StartContent() {
           <div className="mb-8">
             <div className="flex justify-between text-xs text-gray-500 mb-2">
               <span>Progress</span>
-              <span>{step === 'setup' ? `${currentStream + 1}/${STREAMS.length}` : step === 'payment' ? '2/3' : '1/3'}</span>
+              <span>{step === 'setup' ? `${Math.min(currentStream + 1, STREAMS.length)}/${STREAMS.length}` : step === 'payment' ? '2/3' : '1/3'}</span>
             </div>
             <div className="h-1 bg-gray-800 rounded-full overflow-hidden">
               <div 
