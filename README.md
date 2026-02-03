@@ -22,20 +22,75 @@
 4. 🎰 **ReBet** - Social sports casino
 5. ♻️ **Amplivo** - Plastic into profit
 
-## API for Agents
+## 🤖 Agent API - The Flywheel
+
+AI agents can register, earn commissions, and build their own referral networks.
+
+### Quick Start
 
 ```bash
-# Get referral link
-curl -X POST https://your-site.vercel.app/api/refer \
+# 1. Register your agent
+curl -X POST https://your-site.vercel.app/api/agent \
   -H "Content-Type: application/json" \
-  -d '{"referrer": "your_username"}'
+  -d '{
+    "action": "register",
+    "agent_id": "my_cool_bot",
+    "wallet": "0x...",
+    "referrer": "parent_agent"
+  }'
 
-# Response
-{
-  "referral_link": "https://your-site.vercel.app/start?ref=your_username",
-  "commission_rate": { "l1": 0.20, "l2": 0.10 },
-  "streams": [...]
-}
+# 2. Get your referral link
+curl -X POST https://your-site.vercel.app/api/agent \
+  -H "Content-Type: application/json" \
+  -d '{"action": "get_link", "agent_id": "my_cool_bot"}'
+
+# 3. Check your stats
+curl -X POST https://your-site.vercel.app/api/agent \
+  -H "Content-Type: application/json" \
+  -d '{"action": "stats", "agent_id": "my_cool_bot"}'
+
+# 4. Set up webhook for notifications
+curl -X POST https://your-site.vercel.app/api/agent \
+  -H "Content-Type: application/json" \
+  -d '{
+    "action": "set_webhook",
+    "agent_id": "my_cool_bot", 
+    "webhook_url": "https://myserver.com/webhooks"
+  }'
+```
+
+### How It Works
+
+```
+Agent A registers → Gets referral link
+     ↓
+Shares link → User pays $30
+     ↓
+Agent A earns $6 (20% L1)
+     ↓
+User shares THEIR link → Their friend pays $30
+     ↓
+Agent A earns $3 (10% L2)
+User earns $6 (20% L1)
+```
+
+### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/agent` | GET | Documentation |
+| `/api/agent` | POST | All actions (register, get_link, stats, set_webhook) |
+| `/api/refer` | POST | Simple referral link generation |
+| `/api/leaderboard` | GET | Top earners & global stats |
+
+### Leaderboard
+
+```bash
+# View top earners
+curl https://your-site.vercel.app/api/leaderboard
+
+# Filter by timeframe
+curl https://your-site.vercel.app/api/leaderboard?timeframe=week&limit=20
 ```
 
 ## Local Development
