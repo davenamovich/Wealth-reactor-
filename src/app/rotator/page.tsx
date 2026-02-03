@@ -1,14 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAccount, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
-import { parseUnits } from 'viem';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
 import Link from 'next/link';
-
-// USDC on Base
-const USDC_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
-const ROTATOR_PRICE = 20;
 
 interface RotatorEntry {
   username: string;
@@ -16,7 +9,6 @@ interface RotatorEntry {
 }
 
 export default function RotatorPage() {
-  const { address, isConnected } = useAccount();
   const [rotator, setRotator] = useState<RotatorEntry[]>([]);
   const [treasury, setTreasury] = useState('');
   const [loading, setLoading] = useState(true);
@@ -52,7 +44,7 @@ export default function RotatorPage() {
     setLoading(false);
   };
 
-  const joinRotator = async (txHash?: string) => {
+  const joinRotator = async () => {
     if (!username) {
       setMessage('Please sign up first to get a username');
       return;
@@ -67,7 +59,7 @@ export default function RotatorPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           username,
-          txHash: txHash || 'beta-free',
+          txHash: 'beta-free',
         }),
       });
 
@@ -96,22 +88,15 @@ export default function RotatorPage() {
           </p>
         </div>
 
-        {/* Wallet Connect */}
-        <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-sm text-gray-400">Wallet (Base Network)</span>
-            <ConnectButton />
+        {!username && (
+          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-6 mb-6">
+            <div className="text-yellow-400 font-bold mb-2">⚠️ Sign up first</div>
+            <p className="text-sm text-gray-400 mb-4">You need a username to join the rotator</p>
+            <Link href="/start" className="inline-block px-6 py-3 bg-yellow-500 text-black font-bold rounded-xl">
+              Sign up →
+            </Link>
           </div>
-          
-          {!username && (
-            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 text-sm text-yellow-400">
-              ⚠️ Sign up first to get your username
-              <Link href="/start" className="block mt-2 underline">
-                Sign up →
-              </Link>
-            </div>
-          )}
-        </div>
+        )}
 
         {/* Join Rotator */}
         <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-2xl p-6 mb-6">
@@ -165,7 +150,7 @@ export default function RotatorPage() {
               )}
 
               <button
-                onClick={() => joinRotator()}
+                onClick={joinRotator}
                 disabled={joining || !username}
                 className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-black font-bold rounded-xl disabled:opacity-50"
               >
@@ -200,7 +185,7 @@ export default function RotatorPage() {
               <span className="text-gray-400">They sign up using YOUR affiliate links</span>
             </div>
             <div className="flex gap-3">
-              <span className="text-green-400">5. </span>
+              <span className="text-green-400">5.</span>
               <span className="text-gray-400">You earn commissions forever 💰</span>
             </div>
           </div>
