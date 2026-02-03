@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { STREAMS, PRICING } from '@/lib/config';
 import Link from 'next/link';
@@ -12,7 +12,7 @@ interface UserData {
   currentStep: number;
 }
 
-export default function StartPage() {
+function StartContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const ref = searchParams.get('ref');
@@ -48,7 +48,6 @@ export default function StartPage() {
       return;
     }
     
-    // Check if username is available
     setLoading(true);
     try {
       const res = await fetch('/api/user/check', {
@@ -80,31 +79,34 @@ export default function StartPage() {
   };
 
   const handlePayment = async () => {
-    // For now, simulate payment (in production, integrate with USDC)
     setLoading(true);
+    setError('');
     
-    // TODO: Integrate actual USDC payment on Base
-    // For MVP, we'll mark as paid after showing payment modal
+    // For MVP: Free access (payment integration coming)
+    // In production, this would trigger USDC payment on Base
     
-    setTimeout(() => {
+    try {
+      // Simulate brief processing
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       const updated = { ...userData!, hasPaid: true };
       setUserData(updated);
       localStorage.setItem('wealth_reactor_user', JSON.stringify(updated));
       setStep('setup');
-      setLoading(false);
-    }, 1000);
+    } catch (err) {
+      setError('Payment failed. Please try again.');
+    }
+    setLoading(false);
   };
 
   const handleSaveLink = () => {
     const stream = STREAMS[currentStream];
     
-    // Validate link format
     if (!linkInput.trim()) {
       setError('Please enter your referral link');
       return;
     }
 
-    // Save link
     const newLinks = { ...userData!.links, [stream.id]: linkInput.trim() };
     const nextStep = currentStream + 1;
     
@@ -120,7 +122,6 @@ export default function StartPage() {
     setError('');
 
     if (nextStep >= STREAMS.length) {
-      // Save to server
       fetch('/api/user/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -234,7 +235,10 @@ export default function StartPage() {
             <div className="bg-black/50 rounded-xl p-6 mb-6">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-gray-400">Access Fee</span>
-                <span className="text-2xl font-black">${PRICING.accessFee} <span className="text-sm text-gray-500">USDC</span></span>
+                <div className="text-right">
+                  <div className="text-2xl font-black">${PRICING.accessFee} <span className="text-sm text-gray-500">USDC</span></div>
+                  <div className="text-xs text-green-400">🎉 FREE during beta!</div>
+                </div>
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2 text-green-400">
@@ -252,16 +256,18 @@ export default function StartPage() {
               </div>
             </div>
 
+            {error && <p className="text-red-400 text-sm mb-4 text-center">{error}</p>}
+
             <button
               onClick={handlePayment}
               disabled={loading}
-              className="w-full py-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold rounded-xl disabled:opacity-50 text-lg"
+              className="w-full py-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold rounded-xl disabled:opacity-50 text-lg active:scale-95 transition-transform"
             >
-              {loading ? 'Processing...' : `Pay $${PRICING.accessFee} USDC`}
+              {loading ? 'Processing...' : '🚀 Start Free (Beta)'}
             </button>
             
             <p className="mt-4 text-xs text-gray-600 text-center">
-              Payment on Base network • Instant access
+              USDC payment on Base coming soon
             </p>
           </div>
         )}
@@ -355,20 +361,12 @@ export default function StartPage() {
               </div>
             </div>
 
-            <div className="flex gap-3">
-              <Link
-                href={`/u/${userData?.username}`}
-                className="flex-1 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold rounded-xl"
-              >
-                View My Page
-              </Link>
-              <Link
-                href={`/dashboard`}
-                className="flex-1 py-3 bg-gray-800 hover:bg-gray-700 font-bold rounded-xl"
-              >
-                Dashboard
-              </Link>
-            </div>
+            <Link
+              href={`/u/${userData?.username}`}
+              className="block w-full py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold rounded-xl"
+            >
+              View My Page →
+            </Link>
           </div>
         )}
 
@@ -377,5 +375,20 @@ export default function StartPage() {
         </Link>
       </div>
     </main>
+  );
+}
+
+export default function StartPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">💰</div>
+          <div className="text-gray-400">Loading...</div>
+        </div>
+      </main>
+    }>
+      <StartContent />
+    </Suspense>
   );
 }
