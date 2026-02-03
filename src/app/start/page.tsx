@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { STREAMS, PRICING } from '@/lib/config';
 import Link from 'next/link';
+import PayButton from '@/components/PayButton';
 
 interface UserData {
   username: string;
@@ -266,59 +267,44 @@ function StartContent() {
           <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-8">
             <h1 className="text-2xl font-black mb-2">🔄 Join The Rotator</h1>
             <p className="text-gray-400 text-sm mb-6">
-              Pay once. Get traffic forever. Your links shown to every visitor.
+              One-click payment. Lifetime access. Your links shown to every visitor.
             </p>
 
             <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-xl p-6 mb-6">
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex justify-between items-center mb-6">
                 <span className="text-white font-bold">Lifetime Rotator Access</span>
                 <div className="text-right">
                   <div className="text-3xl font-black text-green-400">${PRICING.accessFee}</div>
                   <div className="text-xs text-gray-400">USDC on Base</div>
                 </div>
               </div>
-              
-              <div className="border-t border-green-500/30 pt-4 mt-4 space-y-4">
-                <div>
-                  <div className="text-xs text-gray-400 mb-2">Smart Contract (Base):</div>
-                  <div className="bg-black/50 rounded-lg p-2 font-mono text-xs text-yellow-400 break-all">
-                    0xa6Ca8A21eDEe7f59833d189A357fA8032811b6c6
-                  </div>
-                </div>
 
-                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
-                  <div className="text-sm font-bold text-blue-400 mb-2">💳 Pay via Smart Contract:</div>
-                  <ol className="text-xs text-gray-300 space-y-2 list-decimal list-inside">
-                    <li>Click button below to open BaseScan</li>
-                    <li>Connect wallet → Switch to Base network</li>
-                    <li>First: Approve USDC on the USDC contract</li>
-                    <li>Then: Call <code className="bg-black/50 px-1 rounded">pay</code> with username: <code className="text-yellow-400">{userData?.username}</code></li>
-                  </ol>
+              {error && (
+                <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3 mb-4 text-sm text-red-400">
+                  {error}
                 </div>
+              )}
 
-                <a 
-                  href="https://basescan.org/address/0xa6Ca8A21eDEe7f59833d189A357fA8032811b6c6#writeContract"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-bold text-center"
-                >
-                  🔗 Open Contract on BaseScan →
-                </a>
-
-                <div>
-                  <div className="text-xs text-gray-400 mb-2">Your wallet address (for verification):</div>
-                  <input
-                    type="text"
-                    value={walletAddress}
-                    onChange={(e) => setWalletAddress(e.target.value)}
-                    placeholder="0x..."
-                    className="w-full px-3 py-2 bg-black/50 border border-gray-700 rounded-lg text-white text-sm font-mono focus:border-green-500 focus:outline-none"
-                  />
-                </div>
-              </div>
+              <PayButton 
+                username={userData?.username || ''}
+                referrer={ref || undefined}
+                onSuccess={() => {
+                  const updated = { ...userData!, hasPaid: true };
+                  setUserData(updated);
+                  localStorage.setItem('wealth_reactor_user', JSON.stringify(updated));
+                  // Add to rotator
+                  fetch('/api/rotator', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: userData?.username }),
+                  });
+                  setStep('setup');
+                }}
+                onError={(err) => setError(err)}
+              />
             </div>
 
-            <div className="space-y-2 text-sm mb-6">
+            <div className="space-y-2 text-sm mb-4">
               <div className="flex items-center gap-2 text-green-400">
                 <span>✓</span> Lifetime spot in the rotator
               </div>
@@ -329,22 +315,12 @@ function StartContent() {
                 <span>✓</span> Auto $3 to L2 referrer
               </div>
               <div className="flex items-center gap-2 text-green-400">
-                <span>✓</span> Withdraw your earnings anytime
+                <span>✓</span> Withdraw earnings anytime
               </div>
             </div>
 
-            {error && <p className="text-red-400 text-sm mb-4 text-center">{error}</p>}
-
-            <button
-              onClick={handlePayment}
-              disabled={verifying || !walletAddress}
-              className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-black font-bold rounded-xl disabled:opacity-50 text-lg active:scale-95 transition-transform"
-            >
-              {verifying ? '🔍 Checking Contract...' : '✓ Verify My Payment'}
-            </button>
-            
-            <p className="mt-4 text-xs text-gray-500 text-center">
-              Click after paying via the smart contract
+            <p className="text-xs text-gray-600 text-center">
+              Requires MetaMask or Web3 wallet • Base network
             </p>
           </div>
         )}
