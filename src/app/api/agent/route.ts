@@ -273,7 +273,21 @@ export async function GET() {
       access_fee: `$${PRICING.accessFee} USDC`,
       l1_commission: `${PRICING.l1Commission * 100}% ($${PRICING.accessFee * PRICING.l1Commission})`,
       l2_commission: `${PRICING.l2Commission * 100}% ($${PRICING.accessFee * PRICING.l2Commission})`,
-      payout: 'Pull-based - claim when ready via smart contract',
+      payout: 'Pull-based - call withdraw() on contract',
+    },
+
+    contract: {
+      address: '0xa6Ca8A21eDEe7f59833d189A357fA8032811b6c6',
+      network: 'Base',
+      chain_id: 8453,
+      usdc: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+      functions: {
+        pay: 'pay(string username, address referrer) - Pay $30 USDC',
+        withdraw: 'withdraw() - Claim your earnings',
+        checkPayment: 'checkPayment(address) - Check if user paid',
+        getEarnings: 'getEarnings(address) - Check pending earnings',
+      },
+      basescan: 'https://basescan.org/address/0xa6Ca8A21eDEe7f59833d189A357fA8032811b6c6',
     },
 
     flywheel: {
