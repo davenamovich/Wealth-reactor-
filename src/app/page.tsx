@@ -16,20 +16,20 @@ export default function Home() {
         
         <div className="relative max-w-5xl mx-auto px-6 py-24 text-center">
           <div className="inline-block px-4 py-1 mb-6 text-sm font-mono bg-green-500/10 text-green-400 rounded-full border border-green-500/20">
-            🔥 Early Access — First 100 get priority leads
+            🔄 The Rotator — Pay Once, Get Traffic Forever
           </div>
           
-          <h1 className="text-5xl md:text-7xl font-black mb-6 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-transparent bg-clip-text">
+          <h1 className="text-5xl md:text-7xl font-black mb-6 bg-gradient-to-r from-green-400 via-emerald-500 to-teal-500 text-transparent bg-clip-text">
             {SITE.name}
           </h1>
           
           <p className="text-xl md:text-2xl text-gray-300 mb-4 max-w-2xl mx-auto">
-            {SITE.tagline}
+            $30 gets you in the rotator. Your affiliate links shown to EVERY visitor. Forever.
           </p>
           
           <p className="text-gray-500 mb-10 max-w-xl mx-auto">
-            Set up 5 passive income streams in 10 minutes. Get your own referral page. 
-            Earn 20% L1 + 10% L2 commissions forever.
+            Set up 5 crypto income streams. Join the rotator. Random visitors see YOUR page.
+            Plus earn $6 per referral + $3 from their referrals.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">

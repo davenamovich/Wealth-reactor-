@@ -127,10 +127,17 @@ function StartContent() {
     setError('');
 
     if (nextStep >= STREAMS.length) {
+      // Save user data
       fetch('/api/user/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updated),
+      });
+      // Add to rotator
+      fetch('/api/rotator', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: updated.username }),
       });
       setStep('complete');
     } else {
@@ -154,10 +161,17 @@ function StartContent() {
     setLinkInput('');
 
     if (nextStep >= STREAMS.length) {
+      // Save user data
       fetch('/api/user/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updated),
+      });
+      // Add to rotator
+      fetch('/api/rotator', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: updated.username }),
       });
       setStep('complete');
     } else {
@@ -232,49 +246,51 @@ function StartContent() {
         {/* Step: Payment */}
         {step === 'payment' && (
           <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-8">
-            <h1 className="text-2xl font-black mb-2">Unlock All 5 Streams</h1>
+            <h1 className="text-2xl font-black mb-2">🔄 Join The Rotator</h1>
             <p className="text-gray-400 text-sm mb-6">
-              One payment. Lifetime access. Start earning today.
+              Pay once. Get traffic forever. Your links shown to every visitor.
             </p>
 
-            <div className="bg-black/50 rounded-xl p-6 mb-6">
+            <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-xl p-6 mb-6">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-gray-400">Access Fee</span>
+                <span className="text-white font-bold">Lifetime Rotator Access</span>
                 <div className="text-right">
                   <div className="text-3xl font-black text-green-400">${PRICING.accessFee}</div>
-                  <div className="text-xs text-gray-500">USDC on Base</div>
+                  <div className="text-xs text-gray-400">USDC on Base</div>
                 </div>
               </div>
               
-              <div className="border-t border-gray-700 pt-4 mt-4">
-                <div className="text-xs text-gray-500 mb-2">Send payment to:</div>
-                <div className="bg-gray-900 rounded-lg p-3 font-mono text-xs text-yellow-400 break-all mb-2">
-                  {process.env.NEXT_PUBLIC_TREASURY_WALLET || '0x...'}
+              <div className="border-t border-green-500/30 pt-4 mt-4">
+                <div className="text-xs text-gray-400 mb-2">Send USDC (Base) to:</div>
+                <div className="bg-black/50 rounded-lg p-3 font-mono text-sm text-yellow-400 break-all mb-2">
+                  0x1F5e5897176747b8C9ACD004491E9b45E0e2b207
                 </div>
                 <button
                   onClick={() => {
-                    const wallet = process.env.NEXT_PUBLIC_TREASURY_WALLET || '';
-                    if (wallet) navigator.clipboard.writeText(wallet);
+                    navigator.clipboard.writeText('0x1F5e5897176747b8C9ACD004491E9b45E0e2b207');
                   }}
-                  className="w-full py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-xs"
+                  className="w-full py-2 bg-green-600 hover:bg-green-500 rounded-lg text-sm font-bold"
                 >
-                  📋 Copy Address
+                  📋 Copy Wallet Address
                 </button>
               </div>
             </div>
 
             <div className="space-y-2 text-sm mb-6">
               <div className="flex items-center gap-2 text-green-400">
-                <span>✓</span> All 5 income streams
+                <span>✓</span> Lifetime spot in the rotator
               </div>
               <div className="flex items-center gap-2 text-green-400">
-                <span>✓</span> Your own referral page
+                <span>✓</span> Your page shown to ALL visitors
               </div>
               <div className="flex items-center gap-2 text-green-400">
-                <span>✓</span> Earn $6 per direct referral
+                <span>✓</span> Set up all 5 income streams
               </div>
               <div className="flex items-center gap-2 text-green-400">
-                <span>✓</span> Earn $3 from their referrals
+                <span>✓</span> Earn $6 when your referrals pay
+              </div>
+              <div className="flex items-center gap-2 text-green-400">
+                <span>✓</span> Earn $3 from their referrals too
               </div>
             </div>
 
@@ -288,8 +304,8 @@ function StartContent() {
               {loading ? 'Verifying...' : '✓ I\'ve Sent $30 USDC'}
             </button>
             
-            <p className="mt-4 text-xs text-gray-600 text-center">
-              After payment, you'll set up your 5 income streams
+            <p className="mt-4 text-xs text-gray-500 text-center">
+              Click after sending payment • You'll set up your 5 streams next
             </p>
           </div>
         )}
